@@ -1,0 +1,16 @@
+Asagida yazilan kurallari bir islem yapmadan once her seferinde oku, analiz et ve uygula.
+
+1. Kodu yazmadan once progress.md dosyasini oku.
+2. Kodu yazmadan once functional-requirements.md dosyasini oku.
+3. Kodu yazdiktan sonra progress.md dosyasini guncelle.
+4. Kodu yazdiktan sonra functional-requirements.md dosyasini guncelle.
+5. Her zaman temiz kod yaz.
+6. Terminal uzerinde komut calistirirken her zaman Windows command prompt kullan.
+7. Projeye yeni bir dosya veya klasor eklemeden once dogru dizinde oldugundan emin ol.
+8. Terminal komutlarini her zaman teker teker calistir.
+9. Proje gereksinimlerini her zaman teker teker uygula.
+10. Bana her zaman Turkce cevap ver.
+11. Teknoloji secerken projeyi en kolay nasil yapacaksan ona uygun bir teknoloji sec ve bildigin hazir paketler varsa o paketleri kullan.
+12. Anlamadigin bir konu oldugunda mutlaka once bana soru sor.
+13. Degisikliklerden sonra codebase'i tekrar indexle.
+14. Bu proje icin test yazmaya gerek yok.

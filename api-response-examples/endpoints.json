@@ -1,0 +1,6 @@
+{
+    "ulke listesi": "GET /ulkeler",
+    "sehir listesi": "GET /sehirler/[ULKE_KODU]",
+    "ilce listesi": "GET /ilceler/[SEHIR_KODU]",
+    "secilen ilce icin vakitler": "GET /vakitler/[ILCE_KODU]"
+}
