@@ -50,15 +50,13 @@ class PrayerTimeCard extends StatelessWidget {
                             : theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(
+                      child: Image.asset(
                         _getIconForPrayer(title),
-                        color: isCurrent
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withOpacity(0.7),
-                        size: 20,
+                        width: 20,
+                        height: 20,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Text(
                       title,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -88,22 +86,22 @@ class PrayerTimeCard extends StatelessWidget {
     );
   }
 
-  IconData _getIconForPrayer(String prayer) {
+  String _getIconForPrayer(String prayer) {
     switch (prayer) {
       case 'İmsak':
-        return Icons.nightlight_round;
+        return 'assets/icons/fajr.png';
       case 'Güneş':
-        return Icons.wb_sunny;
+        return 'assets/icons/sunrise.png';
       case 'Öğle':
-        return Icons.light_mode;
+        return 'assets/icons/dhuhr.png';
       case 'İkindi':
-        return Icons.wb_twilight;
+        return 'assets/icons/asr.png';
       case 'Akşam':
-        return Icons.nights_stay;
+        return 'assets/icons/maghrib.png';
       case 'Yatsı':
-        return Icons.dark_mode;
+        return 'assets/icons/isha.png';
       default:
-        return Icons.access_time;
+        return 'assets/icons/mosque.png';
     }
   }
 }

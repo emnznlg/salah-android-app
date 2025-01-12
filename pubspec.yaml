@@ -35,4 +35,5 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/icons/
     - assets/salah_app_icon_black.png

@@ -112,6 +112,7 @@ flutter run
 
 - API için Furkan Tektaş'a (https://furkantektas.com/)
 - Material Design ikonları için Google'a
+- Namaz vakti ikonları için Freepik'e (https://www.freepik.com)
 - Flutter ve Dart ekibine
 
 ## Lisans
