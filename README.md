@@ -4,7 +4,7 @@ Salah, Müslümanlar için günlük namaz vakitlerini takip etmeyi kolaylaştır
 
 ## İndirme
 
-En son sürümü [GitHub Releases](https://github.com/kullanici/salah/releases/latest) sayfasından indirebilirsiniz.
+En son sürümü [GitHub Releases](https://github.com/emnznlg/salah-android-app/releases) sayfasından indirebilirsiniz.
 
 ### Sürüm Geçmişi
 
