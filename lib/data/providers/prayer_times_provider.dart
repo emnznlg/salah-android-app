@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/prayer_times.dart';
 import '../services/prayer_api_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/widget_service.dart';
 
 class PrayerTimesProvider with ChangeNotifier {
   final PrayerApiService _apiService = PrayerApiService();
@@ -110,10 +111,9 @@ class PrayerTimesProvider with ChangeNotifier {
       _prayerTimes = times;
       await _storageService.savePrayerTimes(times);
       _startTimer();
+      await updateWidget();
     } catch (e) {
       _lastError = e.toString();
-      // Eğer internet bağlantısı yoksa veya API'ye erişilemiyorsa,
-      // yerel depolamadan verileri yükle
       await _loadLocalPrayerTimes();
     } finally {
       _isLoading = false;
@@ -125,6 +125,7 @@ class PrayerTimesProvider with ChangeNotifier {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
       notifyListeners();
+      updateWidget();
     });
   }
 
@@ -171,5 +172,19 @@ class PrayerTimesProvider with ChangeNotifier {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> updateWidget() async {
+    if (currentDayPrayerTimes == null) return;
+
+    await WidgetService.updatePrayerTimes(
+      imsak: currentDayPrayerTimes!.fajr,
+      gunes: currentDayPrayerTimes!.sunrise,
+      ogle: currentDayPrayerTimes!.dhuhr,
+      ikindi: currentDayPrayerTimes!.asr,
+      aksam: currentDayPrayerTimes!.maghrib,
+      yatsi: currentDayPrayerTimes!.isha,
+      nextPrayer: remainingTimeText,
+    );
   }
 }
