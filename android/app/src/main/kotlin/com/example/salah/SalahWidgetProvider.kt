@@ -14,12 +14,19 @@ import java.util.*
 class SalahWidgetProvider : AppWidgetProvider() {
     private val ALARM_ID = 1234
     private val TIME_FORMAT = "HH:mm"
+    private val UPDATE_INTERVAL = 60000L  // 1 dk
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        updateWidget(context, appWidgetManager, appWidgetIds)
+        scheduleNextUpdate(context)
+    }
+
+    private fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, R.layout.salah_widget).apply {
                 val widgetData = HomeWidgetPlugin.getData(context)
                 
+                // Namaz vakitlerini güncelle
                 setTextViewText(R.id.imsak_time, widgetData.getString("imsak", "00:00"))
                 setTextViewText(R.id.gunes_time, widgetData.getString("gunes", "00:00"))
                 setTextViewText(R.id.ogle_time, widgetData.getString("ogle", "00:00"))
@@ -27,13 +34,12 @@ class SalahWidgetProvider : AppWidgetProvider() {
                 setTextViewText(R.id.aksam_time, widgetData.getString("aksam", "00:00"))
                 setTextViewText(R.id.yatsi_time, widgetData.getString("yatsi", "00:00"))
 
-                // Calculate remaining time
+                // Kalan süreyi hesapla ve güncelle
                 val remainingTime = calculateRemainingTime(context)
                 setTextViewText(R.id.next_prayer_text, "Sonraki Vakte: $remainingTime")
             }
             appWidgetManager.updateAppWidget(widgetId, views)
         }
-        scheduleNextUpdate(context)
     }
 
     private fun calculateRemainingTime(context: Context): String {
@@ -69,7 +75,6 @@ class SalahWidgetProvider : AppWidgetProvider() {
         }
 
         if (nextPrayerTime == null) {
-            // If no next prayer found today, get first prayer of tomorrow
             val tomorrowImsak = formatter.parse(prayerTimes[0].second)
             if (tomorrowImsak != null) {
                 nextPrayerTime = Calendar.getInstance().apply {
@@ -85,12 +90,11 @@ class SalahWidgetProvider : AppWidgetProvider() {
             val diff = nextPrayerTime.timeInMillis - currentTime.timeInMillis
             val hours = diff / (60 * 60 * 1000)
             val minutes = (diff / (60 * 1000)) % 60
-            val seconds = (diff / 1000) % 60
 
             return when {
                 hours > 0 -> "${hours}s ${minutes}dk"
-                minutes > 0 -> "${minutes}dk ${seconds}sn"
-                else -> "${seconds}sn"
+                minutes > 0 -> "${minutes}dk"
+                else -> "1dk"
             }
         }
 
@@ -102,36 +106,58 @@ class SalahWidgetProvider : AppWidgetProvider() {
         val intent = Intent(context, SalahWidgetProvider::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         }
+
+        // Mevcut alarmı iptal et
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             ALARM_ID,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        // Cancel any existing alarms
         alarmManager.cancel(pendingIntent)
 
-        // Schedule next update in 1 minute
-        val nextUpdate = System.currentTimeMillis() + 60000
+        // Yeni alarmı planla (1 saniye sonrası için)
+        val nextUpdateTime = System.currentTimeMillis() + UPDATE_INTERVAL
 
-        // Use setAlarmClock which is more reliable for locked device scenarios
-        val showIntent = Intent(context, SalahWidgetProvider::class.java)
-        val showPendingIntent = PendingIntent.getBroadcast(
-            context,
-            ALARM_ID + 1,
-            showIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        alarmManager.setAlarmClock(
-            AlarmManager.AlarmClockInfo(nextUpdate, showPendingIntent),
-            pendingIntent
-        )
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        nextUpdateTime,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        nextUpdateTime,
+                        pendingIntent
+                    )
+                }
+            } else {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    nextUpdateTime,
+                    pendingIntent
+                )
+            }
+        } catch (e: Exception) {
+            // Eğer exact alarm izni yoksa, en azından yaklaşık alarm kur
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                nextUpdateTime,
+                pendingIntent
+            )
+        }
     }
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val appWidgetIds = appWidgetManager.getAppWidgetIds(
+            android.content.ComponentName(context, SalahWidgetProvider::class.java)
+        )
+        updateWidget(context, appWidgetManager, appWidgetIds)
         scheduleNextUpdate(context)
     }
 
@@ -151,29 +177,18 @@ class SalahWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         when (intent.action) {
-            AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
+            AppWidgetManager.ACTION_APPWIDGET_UPDATE,
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_TIME_TICK,
+            "android.intent.action.SCREEN_ON" -> {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
                 val appWidgetIds = appWidgetManager.getAppWidgetIds(
                     android.content.ComponentName(context, SalahWidgetProvider::class.java)
                 )
-                onUpdate(context, appWidgetManager, appWidgetIds)
-            }
-            Intent.ACTION_BOOT_COMPLETED -> {
-                // Cihaz yeniden başlatıldığında widget'ı güncelle
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                    android.content.ComponentName(context, SalahWidgetProvider::class.java)
-                )
-                onUpdate(context, appWidgetManager, appWidgetIds)
-            }
-            "android.intent.action.TIME_SET",
-            "android.intent.action.TIMEZONE_CHANGED" -> {
-                // Saat veya zaman dilimi değiştiğinde widget'ı güncelle
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                    android.content.ComponentName(context, SalahWidgetProvider::class.java)
-                )
-                onUpdate(context, appWidgetManager, appWidgetIds)
+                updateWidget(context, appWidgetManager, appWidgetIds)
+                scheduleNextUpdate(context)
             }
         }
     }
