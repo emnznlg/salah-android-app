@@ -192,7 +192,8 @@ class PrayerTimesProvider with ChangeNotifier {
       ikindi: currentDayPrayerTimes!.asr,
       aksam: currentDayPrayerTimes!.maghrib,
       yatsi: currentDayPrayerTimes!.isha,
-      nextPrayer: remainingTimeText,
+      nextPrayer:
+          '${nextPrayerName ?? "Bilinmiyor"} vaktine kalan süre ${remainingTimeText}',
     );
   }
 }

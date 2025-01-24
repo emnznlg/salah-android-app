@@ -20,11 +20,8 @@ class WidgetService {
         HomeWidget.saveWidgetData('ikindi', ikindi),
         HomeWidget.saveWidgetData('aksam', aksam),
         HomeWidget.saveWidgetData('yatsi', yatsi),
-        HomeWidget.saveWidgetData(
-            'next_prayer',
-            nextPrayer.isEmpty
-                ? 'Sonraki Vakte: --:--'
-                : 'Sonraki Vakte: $nextPrayer'),
+        HomeWidget.saveWidgetData('next_prayer',
+            nextPrayer.isEmpty ? 'Sonraki Vakte: --:--' : nextPrayer),
       ]);
 
       await HomeWidget.updateWidget(
