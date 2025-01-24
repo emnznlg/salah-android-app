@@ -98,14 +98,11 @@ class PrayerTimesProvider with ChangeNotifier {
 
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
 
     if (hours > 0) {
       return '$hours s $minutes dk';
-    } else if (minutes > 0) {
-      return '$minutes dk $seconds sn';
     } else {
-      return '$seconds sn';
+      return '$minutes dk';
     }
   }
 

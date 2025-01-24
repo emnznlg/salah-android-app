@@ -14,7 +14,7 @@ import java.util.*
 class SalahWidgetProvider : AppWidgetProvider() {
     private val ALARM_ID = 1234
     private val TIME_FORMAT = "HH:mm"
-    private val UPDATE_INTERVAL = 60000L  // 1 dk
+    private val UPDATE_INTERVAL = 60000L  // 1 dakika
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         updateWidget(context, appWidgetManager, appWidgetIds)
@@ -93,8 +93,7 @@ class SalahWidgetProvider : AppWidgetProvider() {
 
             return when {
                 hours > 0 -> "${hours}s ${minutes}dk"
-                minutes > 0 -> "${minutes}dk"
-                else -> "1dk"
+                else -> "${minutes}dk"
             }
         }
 
@@ -107,22 +106,23 @@ class SalahWidgetProvider : AppWidgetProvider() {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         }
 
-        // Mevcut alarmı iptal et
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             ALARM_ID,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        
+        // Mevcut alarmı iptal et
         alarmManager.cancel(pendingIntent)
 
-        // Yeni alarmı planla (1 saniye sonrası için)
+        // Yeni alarmı planla
         val nextUpdateTime = System.currentTimeMillis() + UPDATE_INTERVAL
 
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExact(
+                    alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         nextUpdateTime,
                         pendingIntent
@@ -142,7 +142,6 @@ class SalahWidgetProvider : AppWidgetProvider() {
                 )
             }
         } catch (e: Exception) {
-            // Eğer exact alarm izni yoksa, en azından yaklaşık alarm kur
             alarmManager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 nextUpdateTime,
