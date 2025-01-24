@@ -17,7 +17,7 @@
         android:gravity="center"
         android:padding="8dp"
         android:background="#FFFFD700"
-        android:text="Sonraki Vakte: --:--" />
+        android:text="Bilinmiyor vaktine kalan süre --:--" />
 
     <!-- Namaz Vakitleri -->
     <LinearLayout
