@@ -34,9 +34,9 @@ class SalahWidgetProvider : AppWidgetProvider() {
                 setTextViewText(R.id.aksam_time, widgetData.getString("aksam", "00:00"))
                 setTextViewText(R.id.yatsi_time, widgetData.getString("yatsi", "00:00"))
 
-                // Kalan süreyi güncelle
-                val nextPrayerText = widgetData.getString("next_prayer", "Bilinmiyor vaktine kalan süre --:--")
-                setTextViewText(R.id.next_prayer_text, nextPrayerText)
+                // Kalan süreyi hesapla ve güncelle
+                val remainingTime = calculateRemainingTime(context)
+                setTextViewText(R.id.next_prayer_text, "Sonraki Vakte: $remainingTime")
             }
             appWidgetManager.updateAppWidget(widgetId, views)
         }
